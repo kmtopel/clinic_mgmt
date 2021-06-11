@@ -2,3 +2,6 @@
 *.csv
 *.txt
 *.db
+
+# make exception for requirements file
+!requirements.txt
