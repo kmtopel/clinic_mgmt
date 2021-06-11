@@ -5,3 +5,6 @@
 
 # make exception for requirements file
 !requirements.txt
+
+# ignore this directory
+env/*
