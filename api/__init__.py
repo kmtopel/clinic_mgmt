@@ -1,30 +1,34 @@
 from flask import Flask
-from flask.views import MethodView
+import os
+from flask_login.utils import _secret_key
+import requests
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
+from flask_migrate import Migrate
+from flask_bcrypt import Bcrypt
+from flask_restful import Api
+
 
 app=Flask(__name__)
+secret_key = os.urandom(25)
+jwt_secret_key = os.urandom(50)
 
-class PatientAPI(MethodView):
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+app.config['SECRET_KEY'] = secret_key
+app.config['JWT_SECRET_KEY'] = jwt_secret_key
+app.config['JWT_BLACKLIST_ENABLED'] = True
+app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 
-    def get(self, pt_id):
-        if pt_id is None:
-            # return a list of users
-            pass
-        else:
-            # expose a single user
-            pass
 
-    def post(self):
-        # create a new user
-        pass
+db = SQLAlchemy(app)
+migrate = Migrate(app,db)
+api = Api(app)
+bcrypt = Bcrypt(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
 
-    def delete(self, pt_id):
-        # delete a single user
-        pass
+from .models import User
+from .views import *
+from .resources import *
 
-    def put(self, pt_id):
-        # update a single user
-        pass
-
-@app.route('/')
-def home():
-    return "Hey there!"
+api.add_resource(Patients,'/patients','/patients/','/patients/<int:pt_id>')
