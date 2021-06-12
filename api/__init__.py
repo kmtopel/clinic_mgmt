@@ -7,7 +7,7 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 from flask_restful import Api
-
+from flask_httpauth import HTTPBasicAuth
 
 app=Flask(__name__)
 secret_key = os.urandom(25)
@@ -26,9 +26,22 @@ api = Api(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
+auth = HTTPBasicAuth()
 
 from .models import User
 from .views import *
 from .resources import *
+
+@auth.verify_password
+def verify_password(username, password):
+    user = User.query.filter_by(email=username).first()
+    if user and bcrypt.check_password_hash(user.password, password):
+        return user
+
+@app.route("/")
+@auth.login_required
+def index():
+    user = auth.current_user()
+    return "Hello {} {}".format(user.fname, user.lname)
 
 api.add_resource(Patients,'/patients','/patients/','/patients/<int:pt_id>')

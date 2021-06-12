@@ -1,5 +1,6 @@
 from flask_restful import Resource, abort
 from .models import Patient
+from api import auth
 
 def abort_if_not_found(pt_id):
     tbl = Patient.query.with_entities(Patient.id)
@@ -8,6 +9,7 @@ def abort_if_not_found(pt_id):
         abort(404, message="{} not found.".format(pt_id)) 
 
 class Patients(Resource):
+    decorators = [auth.login_required]
     def get(self, pt_id=None):
         if pt_id is None:
             pts = [pt.to_json() for pt in Patient.query.all()]

@@ -1,7 +1,7 @@
 from api import db, bcrypt, login_manager, app
 from flask_login import UserMixin
 import jwt
-from datetime import datetime as dt
+from datetime import datetime as dt, timedelta
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -20,10 +20,11 @@ class User(db.Model, UserMixin):
     def encode_auth_token(self, user_id):
         try:
             payload = {
-                'exp': dt.utcnow() + dt.timedelta(days=0, seconds=5),
+                'exp': dt.utcnow() + timedelta(days=0, seconds=5),
                 'iat': dt.utcnow(),
                 'sub': user_id
             }
+            
             return jwt.encode(
                 payload,
                 app.config.get('SECRET_KEY'),
@@ -34,11 +35,6 @@ class User(db.Model, UserMixin):
 
     @staticmethod
     def decode_auth_token(auth_token):
-        """
-        Decodes the auth token
-        :param auth_token:
-        :return: integer|string
-        """
         try:
             payload = jwt.decode(auth_token, app.config.get('SECRET_KEY'))
             return payload['sub']
@@ -89,3 +85,9 @@ db.create_all()
 
 # user = User.query.first()
 # print(user.password.decode('utf-8'))
+
+# user = User(id=1,password='testing')
+# token = user.encode_auth_token(user.id)
+# print('\n')
+# print(token)
+# print('\n')
