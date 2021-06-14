@@ -1,6 +1,8 @@
 from flask_restful import Resource, abort
+from flask_restful.utils import http_status_message
 from .models import Patient
-from api import auth
+from api import auth, db
+from flask import request
 
 def abort_if_not_found(pt_id):
     tbl = Patient.query.with_entities(Patient.id)
@@ -19,8 +21,17 @@ class Patients(Resource):
             abort_if_not_found(pt_id)
             return pt.to_json()
 
-    def post():
-        pass
+    def post(self):
+        try:
+            fname = request.form.get('fname')
+            lname = request.form.get('lname')
+            dob = request.form.get('dob')
+            new_pt = Patient(fname=fname, lname=lname, dob=dob, active=True)
+            db.session.add(new_pt)
+            db.session.commit()
+            return http_status_message(201)
+        except:
+            return http_status_message(400)
 
     def put():
         pass
